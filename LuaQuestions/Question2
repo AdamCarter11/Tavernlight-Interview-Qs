@@ -1,0 +1,44 @@
+--[[
+    INITIAL QUESTION (two)
+Q2 - Fix or improve the implementation of the below method
+
+function printSmallGuildNames(memberCount)
+-- this method is supposed to print names of all guilds that have less than memberCount max members
+local selectGuildQuery = "SELECT name FROM guilds WHERE max_members < %d;"
+local resultId = db.storeQuery(string.format(selectGuildQuery, memberCount))
+local guildName = result.getString("name")
+print(guildName)
+end
+]]
+
+function printSmallGuildNames(memberCount)
+    -- This function prints names of all guilds that have less than memberCount max members
+
+    local selectGuildQuery = "SELECT name FROM guilds WHERE max_members < %d;"
+    -- format the string before searching for it in case we need it
+    --  for something else
+    local formattedQuery = string.format(selectGuildQuery, memberCount)
+
+    -- Execute the query
+    local resultId = db.storeQuery(formattedQuery)
+    
+    -- Check if the query returned any results
+    --  this will let us get an output so we know that something happened
+    --  and in this case, no guilds matched our criteria
+    if not resultId then
+        print("No guilds found with less than " .. memberCount .. " members.")
+        return
+    end
+
+    -- I imagine theres a very high probability in a mmo game
+    --  that there will be more than one guild that has less
+    --  than the specified number, so this will let us see all
+    --  of those guilds instead of just one
+    repeat
+        local guildName = result.getString(resultId, "name")
+        print(guildName)
+    until not result.next(resultId)
+
+    -- free the memory from the resultId
+    result.free(resultId)
+end

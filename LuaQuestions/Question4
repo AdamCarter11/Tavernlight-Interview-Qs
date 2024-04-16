@@ -1,0 +1,68 @@
+/*
+    INITIAL QUESTION (four)
+Q4 - Assume all method calls work fine. Fix the memory leak issue in below method
+
+void Game::addItemToPlayer(const std::string& recipient, uint16_t itemId)
+{
+Player* player = g_game.getPlayerByName(recipient);
+if (!player) {
+player = new Player(nullptr);
+if (!IOLoginData::loadPlayerByName(player, recipient)) {
+return;
+}
+}
+
+Item* item = Item::CreateItem(itemId);
+if (!item) {
+return;
+}
+
+g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT);
+
+if (player->isOffline()) {
+IOLoginData::savePlayer(player);
+}
+}
+*/
+
+// assuming game actually does exist, ignore the error message here
+void Game::addItemToPlayer(const std::string& recipient, uint16_t itemId)
+{
+    Player* player = g_game.getPlayerByName(recipient);
+    // Track if player is created with new
+    bool playerCreated = false; 
+
+    if (!player) {
+        player = new Player(nullptr);
+        playerCreated = true; // Set flag to true
+        if (!IOLoginData::loadPlayerByName(player, recipient)) {
+            // (potential memory leak fix)
+            // Delete the player if loading fails
+            delete player; 
+            return;
+        }
+    }
+
+    Item* item = Item::CreateItem(itemId);
+    if (!item) {
+        // (potential memory leak fix)
+        // Deallocate the item object if it itemId doesn't exist
+        delete item;
+
+        return;
+    }
+
+    g_game.internalAddItem(player->getInbox(), item, INDEX_WHEREEVER, FLAG_NOLIMIT);
+
+    if (player->isOffline()) {
+        IOLoginData::savePlayer(player);
+    }
+
+    // depending on how this function is used
+    // I could see there being an argument to deallocate at the end of the func
+    if(playerCreated)
+        delete player;
+    if(item)
+        delete item;
+     
+}

@@ -1,0 +1,45 @@
+--[[
+    INITIAL QUESTION (one)
+Q1 - Fix or improve the implementation of the below methods
+
+local function releaseStorage(player)
+player:setStorageValue(1000, -1)
+end
+
+function onLogout(player)
+if player:getStorageValue(1000) == 1 then
+addEvent(releaseStorage, 1000, player)
+end
+return true
+end
+]]
+
+
+-- first step to improving the code (and this goes for all of Q's)
+--  is to fix the indentation
+
+-- next we make a constant instead of using a random number
+--  this could also be not a constant based on what you use it for
+local STORAGE_VAL = 1000
+
+-- Looking at this function makes me think it's one we would
+--  want access to globally + we aren't defining a function
+--  inside another function so we really don't need local
+function releaseStorage(player)
+    player:setStorageValue(STORAGE_VAL, -1)
+end
+
+-- I also added an else to check if the player doesn't
+--  exist as I'm assuming when it returns true it's
+--  telling the place in the code that logout was
+--  successful, ie, we should also have an option for it to
+--  be NOT successful
+function onLogout(player)
+    if player:getStorageValue(STORAGE_VAL) == 1 then
+        addEvent(releaseStorage, STORAGE_VAL, player)
+    else
+        return false;
+    end
+
+    return true
+end
